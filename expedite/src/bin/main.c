@@ -1365,6 +1365,16 @@ main(int argc, char **argv)
    XInitThreads();
 #endif
 
+#ifdef __lv2ppu__
+   // Set argc to 4 if not using a keyboard:
+   argc = 3;
+   argv[1] = "-e";
+   argv[2] = "psl1ght";
+
+   // Include the following if not using a keyboard:
+   //argv[3] = "-a";
+#endif
+
    evas_init();
    evas = evas_new();
 

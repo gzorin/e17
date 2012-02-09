@@ -16,12 +16,12 @@ ESKISS_DATADIR="/dev_hdd0/game/$ESKISS_APPID/USRDIR/"
 MINIMAL_TOC="-mminimal-toc"
 #DEBUG_CFLAGS="-g -ggdb -O0"
 DEBUG_CFLAGS="-g -O3"
-CONFIGURE=1
-CLEAN_RULE="clean"
-FSELF="make_fself"
+#CONFIGURE=1
+#CLEAN_RULE="clean"
+FSELF="fself.py"
 
 alias ps3-configure='AR="powerpc64-ps3-elf-ar" CC="powerpc64-ps3-elf-gcc" RANLIB="powerpc64-ps3-elf-ranlib" CFLAGS="$DEBUG_CFLAGS -Wall -I$PSL1GHT/ppu/include -I$PS3DEV/portlibs/ppu/include $MINIMAL_TOC $MYCFLAGS" CPPFLAGS="-I$PSL1GHT/ppu/include -I$PS3DEV/portlibs/ppu/include" CXXFLAGS="-I$PSL1GHT/ppu/include -I$PS3DEV/portlibs/ppu/include"  LDFLAGS="-L$PSL1GHT/ppu/lib -L$PS3DEV/portlibs/ppu/lib" PKG_CONFIG_LIBDIR="$PSL1GHT/ppu/lib/pkgconfig" PKG_CONFIG_PATH="$PS3DEV/portlibs/ppu/lib/pkgconfig"  PKG_CONFIG="pkg-config --static" ./configure   --prefix="$PS3DEV/portlibs/ppu"   --host=powerpc64-ps3-elf    --includedir="$PS3DEV/portlibs/ppu/include"   --libdir="$PS3DEV/portlibs/ppu/lib" '
-alias ps3-smi='sudo -E PATH=$PATH make install'
+alias ps3-smi='PATH=$PATH make install'
 
 function generate_cmake_toolchain {
     cat > Toolchain-ps3.cmake <<EOF
@@ -77,7 +77,7 @@ make_pkg() {
         $FSELF $name.elf $name.self && \
         mkdir -p pkg/USRDIR && cp $logo pkg/ICON0.PNG && \
         make_self_npdrm $name.elf pkg/USRDIR/EBOOT.BIN $contentid && \
-        sfo.py --title $title --appid $appid -f ps3sfo.xml pkg/PARAM.SFO  && \
+        sfo.py --title "$title" --appid "$appid" -f ps3sfo.xml pkg/PARAM.SFO  && \
         make install DESTDIR=`pwd`/temp_install && \
         cp -rf temp_install/$datadir/* pkg/USRDIR/  && \
         rm -rf temp_install && \
@@ -92,7 +92,8 @@ function escape {
     cd escape || cd PROTO/escape || return 1
 
     if [ $CONFIGURE == "1" ]; then
-        MYCFLAGS="-I$PS3DEV/ppu/lib/gcc/powerpc64-ps3-elf/4.5.2/plugin/include/" ps3-configure || return 1
+	GCC_PLUGIN_PATH=$(powerpc64-ps3-elf-gcc -print-file-name=plugin)
+        MYCFLAGS="-I${GCC_PLUGIN_PATH}/include/" ps3-configure || return 1
     fi
     make $CLEAN_RULE all && \
         ps3-smi && \
@@ -172,7 +173,7 @@ function expedite {
         ps3-configure --datadir=$EXPEDITE_DATADIR || return 1
     fi
     make $CLEAN_RULE all && \
-        make_pkg expedite "data/logo.png" "$EXPEDITE_TITLE" "$EXPEDITE_APPID" "$EXPEDITE_DATADIR" && \
+        make_pkg expedite "data/logo-xmb.png" "$EXPEDITE_TITLE" "$EXPEDITE_APPID" "$EXPEDITE_DATADIR" && \
         cd ..
 }
 
@@ -216,10 +217,10 @@ function embryo {
 function lua {
     cd lua-5.1.4 && \
         make $CLEAN_RULE ps3 && \
-        sudo -E PATH=$PATH make INSTALL_TOP="$PS3DEV/portlibs/ppu" install && \
-        sudo -E PATH=$PATH make INSTALL_TOP="$PS3DEV/portlibs/ppu" RANLIB=powerpc64-ps3-elf-ranlib  ranlib && \
-        sudo -E cp etc/lua.pc $PS3DEV/portlibs/ppu/lib/pkgconfig && \
-        sudo -E sed -i -e "s#/usr/local#$PS3DEV/portlibs/ppu#" $PS3DEV/portlibs/ppu/lib/pkgconfig/lua.pc && \
+        $SUDO PATH=$PATH make INSTALL_TOP="$PS3DEV/portlibs/ppu" install && \
+        $SUDO PATH=$PATH make INSTALL_TOP="$PS3DEV/portlibs/ppu" RANLIB=powerpc64-ps3-elf-ranlib  ranlib && \
+        $SUDO cp etc/lua.pc $PS3DEV/portlibs/ppu/lib/pkgconfig && \
+        $SUDO sed -i -e "s#/usr/local#$PS3DEV/portlibs/ppu#" $PS3DEV/portlibs/ppu/lib/pkgconfig/lua.pc && \
         cd ..
 }
 
@@ -312,7 +313,7 @@ function build {
     cd $pwd
 }
 
-sudo pwd > /dev/null
+$SUDO pwd > /dev/null
 
 start=`date +%s`
 if test -z $1 ; then
