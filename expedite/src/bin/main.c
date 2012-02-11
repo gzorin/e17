@@ -1177,6 +1177,9 @@ static const Expedite_Engine engines[] = {
 #if HAVE_EVAS_PSL1GHT
   { "psl1ght",    engine_psl1ght_args, engine_psl1ght_loop, engine_psl1ght_shutdown },
 #endif
+#if HAVE_EVAS_RSXGL
+  { "rsxgl",    engine_rsxgl_args, engine_rsxgl_loop, engine_rsxgl_shutdown },
+#endif
 #if HAVE_EVAS_SOFTWARE_16_X11
   { "x11-16",engine_software_16_x11_args, engine_software_16_x11_loop, engine_software_16_x11_shutdown },
 #endif
@@ -1369,7 +1372,7 @@ main(int argc, char **argv)
    // Set argc to 4 if not using a keyboard:
    argc = 3;
    argv[1] = "-e";
-   argv[2] = "psl1ght";
+   argv[2] = "rsxgl";
 
    // Include the following if not using a keyboard:
    //argv[3] = "-a";
