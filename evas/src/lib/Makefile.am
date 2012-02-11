@@ -48,6 +48,11 @@ SUBDIRS += ../modules/engines/psl1ght/
 EVAS_STATIC_MODULE += ../modules/engines/psl1ght/libevas_engine_psl1ght.la
 EVAS_STATIC_LIBADD += @evas_engine_psl1ght_libs@
 endif
+if EVAS_STATIC_BUILD_RSXGL
+SUBDIRS += ../modules/engines/rsxgl/
+EVAS_STATIC_MODULE += ../modules/engines/rsxgl/libevas_engine_rsxgl.la
+EVAS_STATIC_LIBADD += @evas_engine_rsxgl_libs@
+endif
 if EVAS_STATIC_BUILD_SOFTWARE_16
 SUBDIRS += ../modules/engines/software_16/
 EVAS_STATIC_MODULE += ../modules/engines/software_16/libevas_engine_software_16.la
