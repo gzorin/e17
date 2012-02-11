@@ -1897,6 +1897,7 @@ evas-direct3d.pc
 evas-software-16-wince.pc
 evas-software-sdl.pc
 evas-psl1ght.pc
+evas-rsxgl.pc
 evas-wayland-shm.pc
 evas-wayland-egl.pc
 evas.pc

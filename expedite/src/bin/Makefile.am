@@ -202,6 +202,11 @@ expedite_SOURCES += \
 engine_psl1ght.c
 endif
 
+if BUILD_RSXGL
+expedite_SOURCES += \
+engine_rsxgl.c
+endif
+
 if BUILD_FB
 expedite_SOURCES += \
 engine_fb.c engine_fb.h
