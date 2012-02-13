@@ -892,6 +892,10 @@ CPPFLAGS="$CPPFLAGS -D__RSX__"
 AC_CHECK_HEADER([EGL/egl.h], [have_dep="yes"])
 CPPFLAGS="$save_CPPFLAGS"
 
+if test "x${have_dep}" = "xyes" ; then
+   PKG_CHECK_MODULES([GL_EET], [eet >= 1.5.0], [have_dep="yes"], [have_dep="no"])
+fi
+
 AC_SUBST([evas_engine_$1_cflags])
 AC_SUBST([evas_engine_$1_libs])
 

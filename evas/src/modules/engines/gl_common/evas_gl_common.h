@@ -33,6 +33,9 @@
 #    include <GLES2/gl2.h>
 #    include <GLES2/gl2ext.h>
 #   endif
+#  elif defined(__lv2ppu__)
+#    define GL3_PROTOTYPES
+#    include <GL3/gl3.h>
 #  else
 #   include <GL/gl.h>
 #   include <GL/glext.h>
@@ -107,6 +110,18 @@
 #endif
 #ifndef GL_PROGRAM_BINARY_RETRIEVABLE_HINT
 # define GL_PROGRAM_BINARY_RETRIEVABLE_HINT 0x8257
+#endif
+
+#if defined(__lv2ppu__)
+
+#ifndef GL_LUMINANCE
+#define GL_LUMINANCE GL_RED
+#endif
+
+#ifndef GL_LUMINANCE_ALPHA
+#define GL_LUMINANCE_ALPHA GL_RG
+#endif
+
 #endif
 
 #define SHAD_VERTEX 0

@@ -1,9 +1,11 @@
 #include "evas_gl_private.h"
 
+#if !defined(__lv2ppu__)
 #ifdef HAVE_DLSYM
 # include <dlfcn.h>      /* dlopen,dlclose,etc */
 #else
 # error gl_common should not get compiled if dlsym is not found on the system!
+#endif
 #endif
 
 #define PRG_INVALID 0xffffffff
@@ -54,6 +56,15 @@ gl_symbols(void)
    if (sym_done) return;
    sym_done = 1;
 
+#if defined(__lv2ppu__)
+   glsym_glGenFramebuffers = glGenFramebuffers;
+   glsym_glBindFramebuffer = glBindFramebuffer;
+   glsym_glFramebufferTexture2D = glFramebufferTexture2D;
+   glsym_glDeleteFramebuffers = glDeleteFramebuffers;
+   glsym_glGetProgramBinary = 0;
+   glsym_glProgramBinary = 0;
+   glsym_glProgramParameteri = 0;
+#else
    /* FIXME: If using the SDL engine, we should use SDL_GL_GetProcAddress
     * instead of dlsym
     * if (!dst) dst = (typ)SDL_GL_GetProcAddress(sym)
@@ -93,6 +104,7 @@ gl_symbols(void)
    FINDSYM(glsym_glProgramParameteri, "glProgramParameteri", glsym_func_void);
    FINDSYM(glsym_glProgramParameteri, "glProgramParameteriEXT", glsym_func_void);
    FINDSYM(glsym_glProgramParameteri, "glProgramParameteriARB", glsym_func_void);
+#endif
 
 #if defined (GLES_VARIETY_S3C6410) || defined (GLES_VARIETY_SGX)
 #undef FINDSYM

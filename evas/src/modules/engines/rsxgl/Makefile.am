@@ -5,10 +5,11 @@ AM_CPPFLAGS = \
 -I. \
 -I$(top_srcdir)/src/lib \
 -I$(top_srcdir)/src/lib/include \
--I$(top_srcdir)/src/modules/engines \
+-I$(top_srcdir)/src/modules/engines/gl_common \
 @FREETYPE_CFLAGS@ \
 @PIXMAN_CFLAGS@ \
 @EINA_CFLAGS@ \
+@GL_EET_CFLAGS@ \
 @evas_engine_rsxgl_cflags@
 
 if BUILD_ENGINE_RSXGL
@@ -17,7 +18,7 @@ RSXGL_SOURCES = \
 evas_engine.c \
 rsxutil.c
 
-RSXGL_LIBADD = @evas_engine_rsxgl_libs@
+RSXGL_LIBADD = @GL_EET_LIBS@ @evas_engine_rsxgl_libs@ $(top_builddir)/src/modules/engines/gl_common/libevas_engine_gl_common.la 
 
 
 includes_HEADERS = Evas_Engine_RSXGL.h

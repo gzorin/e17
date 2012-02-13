@@ -22,10 +22,6 @@ if !EVAS_STATIC_BUILD_PSL1GHT
 SUBDIRS += psl1ght
 endif
 
-if !EVAS_STATIC_BUILD_RSXGL
-SUBDIRS += rsxgl
-endif
-
 if !EVAS_STATIC_BUILD_GL_COMMON
 SUBDIRS += gl_common
 endif
@@ -37,6 +33,9 @@ SUBDIRS += gl_sdl
 endif
 if !EVAS_STATIC_BUILD_GL_COCOA
 SUBDIRS += gl_cocoa
+endif
+if !EVAS_STATIC_BUILD_RSXGL
+SUBDIRS += rsxgl
 endif
 
 if !EVAS_STATIC_BUILD_SOFTWARE_8

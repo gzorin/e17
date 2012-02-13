@@ -938,7 +938,8 @@ if test "x$have_evas_engine_gl_xlib" = "xstatic" \
    || test "x$have_evas_engine_gl_xcb" = "xstatic" \
    || test "x$have_evas_engine_gl_sdl" = "xstatic" \
    || test "x$have_evas_engine_gl_cocoa" = "xstatic" \
-   || test "x$have_evas_engine_wayland_egl" = "xstatic"; then
+   || test "x$have_evas_engine_wayland_egl" = "xstatic" \
+   || test "x$have_evas_engine_rsxgl" = "xstatic"; then
    have_evas_engine_gl_common="yes"
    have_static_evas_engine_gl_common="yes"
 fi
