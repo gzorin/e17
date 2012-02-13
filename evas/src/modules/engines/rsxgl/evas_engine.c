@@ -4,7 +4,13 @@
 #include "rsxutil.h"
 #include "Evas_Engine_RSXGL.h"
 
+#include <EGL/egl.h>
+
+#define GL3_PROTOTYPES
+#include <GL3/gl3.h>
+
 #include <malloc.h>
+#include <fcntl.h>
 
 int _evas_engine_rsxgl_log_dom = -1;
 
@@ -22,19 +28,29 @@ struct _Render_Engine
    Tilebuf_Rect   *rects;
    Eina_Inlist    *cur_rect;
 
+#if 0
    /* RSX device context */
    gcmContextData *context;
    void           *host_addr;
+#endif
 
+#if 0
    /* The buffers we will be drawing into. */
    rsxBuffer       buffers[MAX_BUFFERS];
    int             currentBuffer;
+#endif
+
    int             width;
    int             height;
    RGBA_Image     *rgba_image;
    uint32_t        rgba_image_offset;
 
    int             end : 1;
+
+   EGLContext       egl_context[1];
+   EGLSurface       egl_surface[1];
+   EGLConfig        egl_config;
+   EGLDisplay       egl_disp;
 };
 
 /* prototypes we will use here */
@@ -75,13 +91,37 @@ static void * eng_image_map_surface_new(void *data __UNUSED__, int w, int h, int
 static void eng_image_map_surface_free(void *data __UNUSED__, void *surface);
 static void eng_font_draw(void *data __UNUSED__, void *context, void *surface, Evas_Font_Set *font, int x, int y, int w __UNUSED__, int h __UNUSED__, int ow __UNUSED__, int oh __UNUSED__, const Evas_Text_Props *text_props);
 
+void rsxgl_printf(const char * fmt,...)
+{
+  static int fd = -1;
+  if(fd == -1) {
+    mkdir("/dev_hdd0/tmp/evas",0777);
+    fd = open("/dev_hdd0/tmp/evas/log",O_WRONLY | O_APPEND);
+  }
+
+  if(fd != -1) {
+    static char buffer[2048];
+    
+    va_list ap;
+    va_start(ap,fmt);
+    vsnprintf(buffer,2048,fmt,ap);
+    va_end(ap);
+
+    write(fd,buffer,strlen(buffer));
+  }
+}
+
 /* internal engine routines */
 static void *
 _output_setup(int w, int h)
 {
+  rsxgl_printf("%s\n",__PRETTY_FUNCTION__);
+
    Render_Engine *re;
    int i;
+#if 0
    u16 width, height;
+#endif
    DATA32 *image_data = NULL;
    int image_size;
 
@@ -90,6 +130,7 @@ _output_setup(int w, int h)
    if (!re)
      return NULL;
 
+#if 0
    /* Allocate a 1Mb buffer, alligned to a 1Mb boundary
     * to be our shared IO memory with the RSX. */
    re->host_addr = memalign (1024 * 1024, HOST_SIZE);
@@ -105,6 +146,72 @@ _output_setup(int w, int h)
         free (re);
         return NULL;
      }
+#endif
+
+   EGLDisplay dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+   if(dpy == EGL_NO_DISPLAY) {
+     free(re);
+     return NULL;
+   }
+
+   EGLint version0 = 0,version1 = 0;
+   EGLBoolean result;
+   result = eglInitialize(dpy,&version0,&version1);
+   if(!result) {
+     eglTerminate(dpy);
+     free(re);
+     return NULL;
+   }
+
+   EGLint attribs[] = {
+     EGL_RED_SIZE,8,
+     EGL_BLUE_SIZE,8,
+     EGL_GREEN_SIZE,8,
+     EGL_ALPHA_SIZE,8,
+     
+     EGL_DEPTH_SIZE,16,
+     EGL_NONE
+   };
+   EGLConfig config;
+   EGLint nconfig = 0;
+   result = eglChooseConfig(dpy,attribs,&config,1,&nconfig);
+   if(nconfig == 0) {
+     eglTerminate(dpy);
+     free(re);
+     return NULL;
+   }
+
+   EGLSurface surface = eglCreateWindowSurface(dpy,config,0,0);
+   if(surface == EGL_NO_SURFACE) {
+     eglTerminate(dpy);
+     free(re);
+     return NULL;
+   }
+
+   int width = 0, height = 0;
+   eglQuerySurface(dpy,surface,EGL_WIDTH,&width);
+   eglQuerySurface(dpy,surface,EGL_HEIGHT,&height);
+
+   EGLContext ctx = eglCreateContext(dpy,config,0,0);
+   if(ctx == EGL_NO_CONTEXT) {
+     eglTerminate(dpy);
+     free(re);
+     return NULL;
+   }
+
+   result = eglMakeCurrent(dpy,surface,surface,ctx);
+   if(!result) {
+     eglDestroyContext(dpy,ctx);
+     eglTerminate(dpy);
+     free(re);
+   }
+
+   re->egl_context[0] = ctx;
+   re->egl_surface[0] = surface;
+   re->egl_config = config;
+   re->egl_disp = dpy;
+
+#if 0
    width = w;
    height = h;
    setResolution (re->context, &width, &height);
@@ -116,6 +223,10 @@ _output_setup(int w, int h)
      makeBuffer (&re->buffers[i], width, height, i);
 
    flipBuffer(re->context, MAX_BUFFERS - 1);
+#endif
+
+   re->width = width;
+   re->height = height;
 
    /* if we haven't initialized - init (automatic abort if already done) */
    evas_common_cpu_init();
@@ -199,9 +310,11 @@ eng_output_free(void *data)
    printf ("eng_output_free called\n");
    re = (Render_Engine *)data;
 
+#if 0
    gcmSetWaitFlip(re->context);
    for (i = 0; i < MAX_BUFFERS; i++)
      rsxFree (re->buffers[i].ptr);
+#endif
 
    if (re->rgba_image)
      {
@@ -212,8 +325,10 @@ eng_output_free(void *data)
         free (image_data);
      }
 
+#if 0
    freeScreen (re->context);
    free (re->host_addr);
+#endif
 
    evas_common_tilebuf_free(re->tb);
    if (re->rects)
@@ -237,6 +352,7 @@ eng_output_resize(void *data, int w, int h)
    printf ("eng_output_resize called : %dx%d\n", w, h);
    re = (Render_Engine *)data;
 
+#if 0
    width = w;
    height = h;
    if (setResolution (re->context, &width, &height))
@@ -269,6 +385,7 @@ eng_output_resize(void *data, int w, int h)
                                                              w, h, image_data, 1, EVAS_COLORSPACE_ARGB8888);
         gcmMapMainMemory(image_data, image_size, &re->rgba_image_offset);
      }
+#endif
 }
 
 static void
@@ -364,16 +481,26 @@ static void
 eng_output_flush(void *data)
 {
    Render_Engine *re;
+#if 0
    rsxBuffer *buffer;
+#endif
    int width;
    int height;
 
    //printf ("eng_output_flush called\n");
    re = (Render_Engine *)data;
+#if 0
    buffer = &re->buffers[re->currentBuffer];
+#endif
    width = re->rgba_image->cache_entry.w;
    height = re->rgba_image->cache_entry.h;
 
+   glClearColor(1,0,0,1);
+   glClear(GL_COLOR_BUFFER_BIT);
+
+   eglSwapBuffers(re->egl_disp,re->egl_surface[0]);
+
+#if 0
    /* Wait for the flip before copying the buffer */
    waitFlip ();
 
@@ -437,6 +564,7 @@ eng_output_flush(void *data)
    /* Flip buffer onto screen */
    flipBuffer (re->context, re->currentBuffer);
    re->currentBuffer = (re->currentBuffer + 1) % MAX_BUFFERS;
+#endif
 }
 
 static void

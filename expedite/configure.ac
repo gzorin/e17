@@ -79,6 +79,9 @@ EXPEDITE_CHECK_ENGINE([software-sdl], [Software SDL], "yes")
 # PSL1GHT
 EXPEDITE_CHECK_ENGINE([psl1ght], [PSL1GHT], "yes")
 
+# RSXGL
+EXPEDITE_CHECK_ENGINE([rsxgl], [RSXGL], "yes")
+
 # GL SDL
 EXPEDITE_CHECK_ENGINE([opengl-sdl], [OpenGL SDL], "yes")
 
@@ -183,6 +186,9 @@ AM_CONDITIONAL(BUILD_SDL, test "x$have_sdl" = "xyes")
 # PSL1GHT
 AM_CONDITIONAL(BUILD_PSL1GHT, test "x$have_psl1ght" = "xyes")
 
+# RSXGL
+AM_CONDITIONAL(BUILD_RSXGL, test "x$have_rsxgl" = "xyes")
+
 # DirectFB
 
 if test "x$have_directfb" = "xyes"; then
@@ -274,6 +280,7 @@ echo "    Open GL Cocoa................: ${have_opengl_cocoa}"
 echo "    FB...........................: ${have_fb}"
 echo "    DirectFB.....................: ${have_directfb}"
 echo "    PSL1GHT......................: ${have_psl1ght}"
+echo "    RSXGL........................: ${have_rsxgl}"
 echo "    Software X11 16 bits.........: ${have_software_16_x11}"
 echo "    Software DirectDraw 16 bits..: ${have_software_16_ddraw}"
 echo "    Software WinCE 16 bits.......: ${have_software_16_wince}"

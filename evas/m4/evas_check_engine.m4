@@ -876,14 +876,28 @@ fi
 AC_DEFUN([EVAS_CHECK_ENGINE_DEP_RSXGL],
 [
 
-have_dep="no"
-evas_engine_[]$1[]_cflags=""
-evas_engine_[]$1[]_libs=""
+AC_ARG_VAR([PSL1GHT],[path to PSL1GHT installation])
 
-AC_CHECK_HEADER([rsx/rsx.h], [have_dep="yes"])
+rsxgl_cppflags="-I${PSL1GHT}/ppu/include -D__RSX__"
+rsxgl_ldflags="-L${PSL1GHT}/ppu/lib"
+rsxgl_libs="-lEGL -lGL"
+requirement="evas-rsxgl"
+
+have_dep="no"
+evas_engine_[]$1[]_cflags="$rsxgl_cppflags"
+evas_engine_[]$1[]_libs="$rsxgl_ldflags $rsxgl_libs"
+
+save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS -D__RSX__"
+AC_CHECK_HEADER([EGL/egl.h], [have_dep="yes"])
+CPPFLAGS="$save_CPPFLAGS"
 
 AC_SUBST([evas_engine_$1_cflags])
 AC_SUBST([evas_engine_$1_libs])
+
+if test "x$3" = "xstatic" ; then
+   requirement_evas="${requirement} ${requirement_evas}"
+fi
 
 if test "x${have_dep}" = "xyes" ; then
   m4_default([$4], [:])

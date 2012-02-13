@@ -1,3 +1,8 @@
+PSL1GHT=@PSL1GHT@
+
 Name: evas-rsxgl
 Description: Evas RSXGL engine
 Version: @VERSION@
+
+Libs: @evas_engine_rsxgl_libs@
+Cflags: @evas_engine_rsxgl_cflags@
